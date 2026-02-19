@@ -20,11 +20,6 @@ public class Examm {
             getMenu();
             String input = sc.nextLine().trim();
 
-            if (input.startsWith("#")) {
-                runPattern(input);
-                continue;
-            }
-
             try {
                 choice = Integer.parseInt(input);
             } catch (Exception e) {
@@ -55,8 +50,6 @@ public class Examm {
                 case 7:
                     System.out.println("Goodbye!");
                     break;
-                case 8:
-                    getPath();
             }
         } while (choice != 7);
 
@@ -73,14 +66,26 @@ public class Examm {
                 "\t5. Delete contact by number\n" +
                 "\t6. Show all contacts\n" +
                 "\t7. Exit\n" +
-                "\t8. Show Flow charts\n" +
                 "Please to enter your choice : ");
     }
 
     // ===== Case 1: Add Contact (Bonus: multi numbers) =====
     static void addContact() {
-        System.out.print("Enter name : ");
-        String name = sc.nextLine();
+        String name;
+
+        do {
+            System.out.print("Enter name (type 'exit' to stop): ");
+            name = sc.nextLine().trim();
+            if (name.isEmpty()) {
+                System.out.println("Name cannot be empty.");
+                continue;
+            }
+            if (name.equalsIgnoreCase("exit")) {
+                System.out.println("Cancelled adding contact.");
+                return; // stop the whole function
+            }
+            break;
+        } while (!name.equalsIgnoreCase("exit"));
 
         System.out.print("Enter type (Family/Personal/Work/Other) or (f/p/w/o): ");
         String typeInput = sc.nextLine().trim();
@@ -91,51 +96,101 @@ public class Examm {
         else if (lower.startsWith("p")) type = "Personal";
         else if (lower.startsWith("w")) type = "Work";
         else if (lower.startsWith("o")) type = "Other";
-        else type = typeInput; // will be validated below
+        else type = typeInput;
 
-        // validate type (required)
+        // FIX #1: actually fallback to Other
         if (!type.equalsIgnoreCase("Family") &&
                 !type.equalsIgnoreCase("Personal") &&
                 !type.equalsIgnoreCase("Work") &&
                 !type.equalsIgnoreCase("Other")) {
-            System.out.println("Invalid type! It will be considered as Other.");
             type = "Other";
+            System.out.println("Invalid type! It will be considered as Other it's : " + type);
         } else {
             type = type.substring(0, 1).toUpperCase() + type.substring(1).toLowerCase();
         }
 
-        // Bonus: one contact has many numbers
         ArrayList<String> nums = new ArrayList<>();
         String more;
-
+        System.out.println("Enter 'exit' to exit");
         do {
-            System.out.print("Enter number : ");
-            String number = sc.nextLine().trim();
-
-            // simple validation: digits only (you can allow + if you want)
-            while (!isValidNumber(number)) {
-                System.out.print("Invalid number! Enter digits only: ");
+            String number;
+            boolean skippedThisEntry = false; // To continue & skip flow
+            boolean exitNumbers = false;
+            while (true) {
+                System.out.print("Enter number: ");
                 number = sc.nextLine().trim();
-            }
 
-            // prevent duplicates: system-wide + inside current contact
-            if (isNumberExists(number) || nums.contains(number)) {
-                System.out.println("Number already exists!");
-            } else {
+                if (number.isEmpty()) {
+                    System.out.println("Number is required (can't be empty).");
+                    continue;
+                }
+                //number.equalsIgnoreCase
+                if(number.equalsIgnoreCase("exit")){
+                    exitNumbers = true;
+                    break;
+                }
+
+                // Allow N only if already has multiple numbers
+                if (number.equalsIgnoreCase("n")) {
+                    if (nums.size() >= 1) {
+                        skippedThisEntry = true; // skip adding another number
+                        break;
+                    } else {
+                        System.out.println("Skip is available only when you already have multiple numbers Or sent (exit).");
+                        continue;
+                    }
+                }
+
+                if (!isValidNumber(number)) {
+                    System.out.println("Invalid number! Enter digits only.");
+                    continue;
+                }
+
+                if (isNumberExists(number) || nums.contains(number)) {
+                    if (nums.size() >= 1) {
+                        System.out.println("Number already exists! Enter a different number or send (n) to skip.");
+                    } else {
+                        System.out.println("Number already exists! Enter a different number.");
+                    }
+                    continue;
+                }
+
                 nums.add(number);
                 System.out.println("Number added.");
+                break;
             }
 
-            System.out.print("Add another number? (y/ else (n)) : ");
-            more = sc.nextLine().trim();
+            // If user skipped via N, stop the "add another?" flow immediately
+            if (skippedThisEntry) {
+                more = "n";
 
-        } while (more.equalsIgnoreCase("y"));
+                if (exitNumbers) {
+                    break; // NEW: break the do-while so it won't ask "Add another number?"
+                }
 
-        contacts.add(name);
-        types.add(type);
-        nums_list.add(nums);
+            } else {
+                System.out.print("Add another number? (yes/y or no/n): ");
+                more = sc.nextLine().trim();
 
-        System.out.println("Contact added successfully");
+                while (!(more.equalsIgnoreCase("y") ||
+                        more.equalsIgnoreCase("yes") ||
+                        more.equalsIgnoreCase("n") ||
+                        more.equalsIgnoreCase("no"))) {
+                    System.out.print("Please enter yes/y or no/n: ");
+                    more = sc.nextLine().trim();
+                }
+            }
+
+        } while (more.equalsIgnoreCase("y") || more.equalsIgnoreCase("yes"));
+
+        if (!nums.isEmpty()) {
+            contacts.add(name);
+            types.add(type);
+            nums_list.add(nums);
+            System.out.println("Contact added successfully");
+        } else {
+            System.out.println("Contact not add any number...");
+        }
     }
 
     // ===== Case 2: Search by Name (contains + Bonus similar by removing vowels) =====
@@ -159,10 +214,22 @@ public class Examm {
         if (!found) System.out.println("Not found");
     }
 
-    // ===== Case 3: Search by Number (must print ALL matches) =====
+    // ===== Case 3: Search by Number (must print ALL matches by numbers) =====
     static void searchByNumber() {
-        System.out.print("Enter number : ");
-        String number = sc.nextLine().trim();
+        String number= "";
+        while (true){
+            System.out.print("Enter your number : ");
+            number = sc.nextLine().trim();
+            if (number.isEmpty()) {
+                System.out.println("Number is required (can't be empty).");
+                continue;
+            }
+            if (!isValidNumber(number)) {
+                System.out.println("Invalid number! Enter digits only.");
+                continue;
+            }
+            break;
+        }
 
         boolean found = false;
 
@@ -246,248 +313,6 @@ public class Examm {
         return result;
     }
 
-    static void getPath() {
-        System.out.println("\n========== Flow Charts ==========\n");
-
-        printRow(flowAdd(), flowSearchByName());
-        System.out.println();
-
-        printRow(flowSearchByNumber(), flowDeleteByName());
-        System.out.println();
-
-        printRow(flowDeleteByNumber(), flowShowAll());
-    }
-
-    static String flowAdd() {
-        return
-                "1) Add new contact\n" +
-                        "\tFlow:\n" +
-                        "\t\t- Enter name\n" +
-                        "\t\t- Enter type (Family/Personal/Work/Other) or (f/p/w/o)\n" +
-                        "\t\t- Enter number\n" +
-                        "\t\t- Add another number? (y/n)\n" +
-                        "\t\t- Saved: name + type + numbers\n" +
-                        "\tPattern:\n" +
-                        "\t\t#1#<Name>#<Type>#<NumbersCSV>#\n" +
-                        "\t\tExample:\n" +
-                        "\t\t#1#Mohammed#Work#1,2,3#\n"
-        ;
-    }
-
-    static String flowSearchByName() {
-        return
-                "2) Search by name\n" +
-                        "\tFlow:\n" +
-                        "\t\t- Enter name keyword\n" +
-                        "\t\t- System prints all matches\n" +
-                        "\tPattern:\n" +
-                        "\t\t#2#<NameKeyword>#\n" +
-                        "\t\tExample:\n" +
-                        "\t\t#2#Mohammed#\n"
-        ;
-    }
-
-    static String flowSearchByNumber() {
-        return
-                "3) Search by number\n" +
-                        "\tFlow:\n" +
-                        "\t\t- Enter number\n" +
-                        "\t\t- System prints ALL matches\n" +
-                        "\tPattern:\n" +
-                        "\t\t#3#<Number>#\n" +
-                        "\t\tExample:\n" +
-                        "\t\t#3#0591234567#\n"
-        ;
-    }
-
-    static String flowDeleteByName() {
-    return
-
-                "4) Delete by name\n" +
-                        "\tFlow:\n" +
-                        "\t\t- Enter full name (exact match)\n" +
-                        "\t\t- System deletes ALL full matches + prints count\n" +
-                        "\tPattern:\n" +
-                        "\t\t#4#<FullName>#\n" +
-                        "\t\tExample:\n" +
-                        "\t\t#4#Mohmme Ali#\n"
-        ;
-    }
-    static String flowDeleteByNumber() {
-    return
-                "5) Delete by number\n" +
-                        "\tFlow:\n" +
-                        "\t\t- Enter number\n" +
-                        "\t\t- System deletes ALL contacts having this number\n" +
-                        "\tPattern:\n" +
-                        "\t\t#5#<Number>#\n" +
-                        "\t\tExample:\n" +
-                        "\t\t#5#0591234567#\n"
-        ;
-    }
-
-    static String flowShowAll() {
-    return
-                "6) Show all contacts\n" +
-                        "\tFlow:\n" +
-                        "\t\t- System prints table of all contacts\n" +
-                        "\tPattern:\n" +
-                        "\t\t#6#\n" +
-                        "\t\tExample:\n" +
-                        "\t\t#6#\n"
-        ;
-    }
-
-
-
-    static void runPattern(String pattern) {
-
-        String[] raw = pattern.split("#");
-        ArrayList<String> t = new ArrayList<>();
-        for (String s : raw) {
-            s = s.trim();
-            if (!s.isEmpty()) t.add(s);
-        }
-
-        if (t.isEmpty()) {
-            System.out.println("Empty pattern!");
-            return;
-        }
-
-        int i = 0;
-        while (i < t.size()) {
-            String cmdStr = t.get(i++);
-
-            if (!isInt(cmdStr)) {
-                System.out.println("Pattern error: expected command number, got: " + cmdStr);
-                return;
-            }
-
-            int cmd = Integer.parseInt(cmdStr);
-
-            if (cmd == 1) {                 // #1#Name#Type#n1,n2#
-                if (i + 2 >= t.size()) {
-                    System.out.println("Pattern Add: #1#Name#Type#n1,n2#");
-                    return;
-                }
-                String name = t.get(i++);
-                String type = t.get(i++);
-                String csv  = t.get(i++);
-                jobAdd(name, type, csv);
-            }
-            else if (cmd == 2) {            // #2#keyword#
-                if (i >= t.size()) {
-                    System.out.println("Pattern Search Name: #2#keyword#");
-                    return;
-                }
-                jobSearchName(t.get(i++));
-            }
-            else if (cmd == 3) {            // #3#number#
-                if (i >= t.size()) {
-                    System.out.println("Pattern Search Number: #3#number#");
-                    return;
-                }
-                jobSearchNumber(t.get(i++));
-            }
-            else if (cmd == 4) {            // #4#fullName#
-                if (i >= t.size()) {
-                    System.out.println("Pattern Delete Name: #4#fullName#");
-                    return;
-                }
-                jobDeleteName(t.get(i++));
-            }
-            else if (cmd == 5) {            // #5#number#
-                if (i >= t.size()) {
-                    System.out.println("Pattern Delete Number: #5#number#");
-                    return;
-                }
-                jobDeleteNumber(t.get(i++));
-            }
-            else if (cmd == 6) {            // #6#
-                allContacts();
-            }
-            else if (cmd == 7) {            // #7#
-                System.out.println("Goodbye!");
-                System.exit(0);
-            }
-            else if (cmd == 8) {            // #8#
-                getPath();
-            }
-            else {
-                System.out.println("Unknown command in pattern: " + cmd);
-                return;
-            }
-        }
-    }
-
-    // ===== jobs (prepare input then call existing functions) =====
-    static void jobAdd(String name, String type, String numbersCsv) {
-        String[] nums = numbersCsv.split(",");
-
-        StringBuilder fake = new StringBuilder();
-        fake.append(name).append("\n");
-        fake.append(type).append("\n");
-
-        int count = 0;
-        for (String num : nums) {
-            num = num.trim();
-            if (num.isEmpty()) continue;
-
-            count++;
-            fake.append(num).append("\n");
-            fake.append("y").append("\n");
-        }
-
-        if (count == 0) {
-            fake.append("0\n");
-            fake.append("n\n");
-        } else {
-            int lastY = fake.lastIndexOf("y\n");
-            if (lastY != -1) {
-                fake.replace(lastY, lastY + 2, "n\n");
-            }
-        }
-
-        runWithFakeScanner(fake.toString(), () -> addContact());
-    }
-
-
-    static void jobSearchName(String keyword) {
-        runWithFakeScanner(keyword + "\n", () -> searchByName());
-    }
-
-    static void jobSearchNumber(String number) {
-        runWithFakeScanner(number.trim() + "\n", () -> searchByNumber());
-    }
-
-    static void jobDeleteName(String fullName) {
-        runWithFakeScanner(fullName + "\n", () -> deleteByName());
-    }
-
-    static void jobDeleteNumber(String number) {
-        runWithFakeScanner(number.trim() + "\n", () -> deleteByNumber());
-    }
-
-    // run any existing function using temporary scanner input
-    static void runWithFakeScanner(String fakeInput, Runnable action) {
-        Scanner old = sc;
-        sc = new Scanner(fakeInput);
-        try {
-            action.run();
-        } finally {
-            sc = old;
-        }
-    }
-
-    static boolean isInt(String s) {
-        if (s == null || s.isEmpty()) return false;
-        for (int i = 0; i < s.length(); i++) {
-            if (!Character.isDigit(s.charAt(i))) return false;
-        }
-        return true;
-    }
-
-
     // ===== Helpers =====
     static boolean isNumberExists(String number) {
         for (ArrayList<String> list : nums_list) {
@@ -503,56 +328,4 @@ public class Examm {
         }
         return true;
     }
-
-    static void printRow(String left, String right) {
-        final int TAB_SIZE = 4;
-        final int COL_GAP  = 6;
-
-        String[] L = left.split("\n");
-        String[] R = right.split("\n");
-
-        for (int i = 0; i < L.length; i++) L[i] = expandTabs(L[i], TAB_SIZE);
-        for (int i = 0; i < R.length; i++) R[i] = expandTabs(R[i], TAB_SIZE);
-
-        int leftWidth = 0;
-        for (String line : L) {
-            if (line.length() > leftWidth) leftWidth = line.length();
-        }
-
-        int max = Math.max(L.length, R.length);
-        for (int i = 0; i < max; i++) {
-            String leftLine  = (i < L.length) ? L[i] : "";
-            String rightLine = (i < R.length) ? R[i] : "";
-
-            System.out.println(padRight(leftLine, leftWidth) + spaces(COL_GAP) + rightLine);
-        }
-    }
-
-    static String expandTabs(String s, int tabSize) {
-        String result = "";
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c == '\t') result += spaces(tabSize);
-            else result += c;
-        }
-        return result;
-    }
-
-    static String padRight(String s, int width) {
-        if (s.length() >= width) return s;
-        return s + spaces(width - s.length());
-    }
-
-    static String spaces(int n) {
-        String s = "";
-        for (int i = 0; i < n; i++) s += " ";
-        return s;
-    }
-    // === End Helpers ====
 }
-
-
-/**
- * -1 المطلوب الأول هو التحقق من انه ممنوع اضافة بدون رقم جوال.
- * 2-
- */
