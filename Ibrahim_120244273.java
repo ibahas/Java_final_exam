@@ -4,7 +4,7 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Examm {
+public class Ibrahim_120244273 {
 
     // ===== Keep Definitions (deff) =====
     static ArrayList<String> contacts = new ArrayList<>();
