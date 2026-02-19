@@ -1,5 +1,5 @@
-// لغة برمجة (1) عملي (شعبة 101) - ابراهيم علي ابراهيم أبو حسنين - 120244273
-// لغة برمجة (1) عملي (شعبة 101) - بشار محمد سالم البريم - 120235430
+// 120244273 - Ibrahim Ali Ibrahim Abu Hassanein - Java Practical
+// 120235430 - Bashar Mohammed Salem Al-Brim - Java Practical
 
 import java.util.ArrayList;
 import java.util.Scanner;
