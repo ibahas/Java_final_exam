@@ -16,5 +16,7 @@ public class Q17 {
             System.out.println("Number divid is : " + ((double) num / num_1));
         }
 
+        input.close();
+
     }
 }

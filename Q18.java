@@ -31,5 +31,6 @@ public class Q18 {
         DecimalFormat df = new DecimalFormat("#.##");
         System.out.print(total + " from 500 (" + df.format(avg) + "%)");
 
+        input.close();
     }
 }

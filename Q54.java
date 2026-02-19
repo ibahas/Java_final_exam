@@ -14,5 +14,7 @@ public class Q54 {
 
         //print
         System.out.println(array);
+
+        input.close();
     }
 }

@@ -6,10 +6,10 @@ public class Q23 {
         Scanner input = new Scanner(System.in);
 
         // aX2+bX+c=0
-        System.out.println("Give me X2");
-        double x2 = input.nextDouble();
-        System.out.println("Give me X");
-        double x = input.nextDouble();
+       // System.out.println("Give me X2");
+        // double x2 = input.nextDouble();
+        //System.out.println("Give me X");
+       // double x = input.nextDouble();
 
         System.out.println("Give me C :");
         double c = input.nextDouble();
@@ -35,6 +35,8 @@ public class Q23 {
             System.out.println("The roots are :" + other + "\n" + otherMin);
 
         }
+
+        input.close();
 
     }
 }

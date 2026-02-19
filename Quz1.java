@@ -13,5 +13,7 @@ public class Quz1 {
             System.out.println(num + " is odd.");
         }
 
+        input.close();
+
     }
 }
