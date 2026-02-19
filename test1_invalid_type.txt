@@ -1,0 +1,7 @@
+1
+Edge Case One
+invalidType
+0500000000
+n
+6
+7
